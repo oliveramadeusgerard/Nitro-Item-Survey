@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Season Rating Demo</title>
+  <style>
+    :root {
+      --ink: #232628;
+      --muted: #687078;
+      --paper: #eef1ef;
+      --surface: #ffffff;
+      --line: #d7dddd;
+      --charcoal: #25282b;
+      --red: #d6333f;
+      --red-dark: #a92731;
+      --teal: #08776e;
+      --teal-dark: #075f58;
+      --yellow: #efbd45;
+      --bad: #a83b34;
+      --shadow: 0 18px 50px rgba(22, 24, 26, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+      letter-spacing: 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.58;
+    }
+
+    .topbar {
+      background: var(--charcoal);
+      border-bottom: 4px solid var(--red);
+      color: #fff;
+    }
+
+    .topbar-inner,
+    .wrap {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      background: var(--red);
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .brand strong,
+    .player strong {
+      display: block;
+      line-height: 1.1;
+    }
+
+    .brand span,
+    .player span {
+      display: block;
+      margin-top: 3px;
+      color: #cbd1d0;
+      font-size: 0.88rem;
+    }
+
+    .player {
+      text-align: right;
+      flex: 0 0 auto;
+    }
+
+    .season-band {
+      background: var(--charcoal);
+      color: #fff;
+      padding: 34px 0 42px;
+    }
+
+    .season-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+
+    .survey-panel,
+    .readout {
+      background: var(--surface);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .survey-panel {
+      padding: 24px;
+    }
+
+    .season-heading {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .medal {
+      width: 86px;
+      height: 86px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #f4f5f2;
+      border: 1px solid var(--line);
+    }
+
+    .medal img {
+      width: 70px;
+      height: 70px;
+      object-fit: contain;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 2.1rem;
+      line-height: 1.05;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+
+    h3 {
+      margin-bottom: 8px;
+      font-size: 1rem;
+      line-height: 1.25;
+    }
+
+    .eyebrow {
+      margin-bottom: 10px;
+      color: var(--red-dark);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .season-copy {
+      margin-bottom: 0;
+      color: #4d555a;
+      line-height: 1.5;
+    }
+
+    .nps-scale {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .nps-button {
+      width: 48px;
+      height: 44px;
+      border: 1px solid var(--line);
+      background: #f8faf9;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .nps-button[aria-pressed="true"] {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    .scale-labels {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .reason-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 20px;
+    }
+
+    .chip {
+      min-height: 38px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .chip[aria-pressed="true"] {
+      background: #ffe6e8;
+      border-color: #ee9ca4;
+      color: var(--red-dark);
+    }
+
+    .comment-box {
+      width: 100%;
+      min-height: 88px;
+      resize: vertical;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fbfcfb;
+      line-height: 1.45;
+    }
+
+    .readout {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 22px;
+    }
+
+    .readout-visual {
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #222;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .readout-visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(214, 51, 63, 0.2);
+      border-bottom: 32px solid rgba(8, 119, 110, 0.48);
+    }
+
+    .loot-stack {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 78px);
+      gap: 8px;
+      align-items: end;
+    }
+
+    .loot-stack img {
+      width: 78px;
+      height: 78px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 13px rgba(0, 0, 0, 0.34));
+    }
+
+    .readout dl {
+      margin: 0;
+    }
+
+    .readout-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .readout-row:first-child {
+      border-top: 0;
+    }
+
+    .readout dt {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .readout dd {
+      margin: 0;
+      font-weight: 900;
+      text-align: right;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: #fff3ce;
+      color: #6a4a04;
+      font-weight: 800;
+    }
+
+    .status-pill.is-done {
+      background: #dff1e7;
+      color: #1b6738;
+    }
+
+    .rewards-band {
+      padding: 34px 0 98px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    .section-head p {
+      max-width: 620px;
+      margin-bottom: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .progress-note {
+      flex: 0 0 auto;
+      color: var(--teal-dark);
+      font-weight: 900;
+    }
+
+    .reward-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+      gap: 14px;
+    }
+
+    .reward-tile {
+      min-height: 268px;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .reward-art {
+      height: 128px;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: #f7f8f6;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .reward-art img {
+      width: 118px;
+      height: 92px;
+      object-fit: contain;
+    }
+
+    .reward-body {
+      min-height: 78px;
+      padding: 14px 14px 8px;
+    }
+
+    .reward-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .track-tag {
+      color: var(--red-dark);
+    }
+
+    .track-tag.is-free {
+      color: var(--teal-dark);
+    }
+
+    .reward-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      padding: 0 10px 12px;
+      margin-top: auto;
+    }
+
+    .loot-button {
+      min-height: 38px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .loot-button[aria-pressed="true"][data-value="love"] {
+      background: #daf0e4;
+      border-color: #7dc198;
+      color: #155d32;
+    }
+
+    .loot-button[aria-pressed="true"][data-value="fine"] {
+      background: #fff0c2;
+      border-color: var(--yellow);
+      color: #684b06;
+    }
+
+    .loot-button[aria-pressed="true"][data-value="miss"] {
+      background: #f9dddb;
+      border-color: #d58c86;
+      color: var(--bad);
+    }
+
+    .action-bar {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background: rgba(238, 241, 239, 0.96);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+    }
+
+    .action-inner {
+      width: min(1180px, calc(100% - 32px));
+      min-height: 76px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .action-copy {
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .action-copy strong {
+      display: block;
+      color: var(--ink);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      flex: 0 0 auto;
+    }
+
+    .primary-button,
+    .secondary-button {
+      min-height: 46px;
+      padding: 0 18px;
+      font-weight: 900;
+    }
+
+    .primary-button {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .primary-button:hover:not(:disabled) {
+      background: var(--red-dark);
+    }
+
+    .secondary-button {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 96px;
+      max-width: min(360px, calc(100% - 48px));
+      padding: 14px 16px;
+      border-radius: 8px;
+      background: var(--charcoal);
+      color: #fff;
+      box-shadow: var(--shadow);
+      transform: translateY(18px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      z-index: 3;
+    }
+
+    .toast.is-visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 900px) {
+      .season-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .readout {
+        box-shadow: none;
+      }
+
+      .section-head,
+      .action-inner {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .action-buttons {
+        width: 100%;
+      }
+
+      .primary-button,
+      .secondary-button {
+        flex: 1 1 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar-inner,
+      .wrap,
+      .action-inner {
+        width: min(100% - 20px, 1180px);
+      }
+
+      .topbar-inner {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 14px 0;
+      }
+
+      .player {
+        text-align: left;
+      }
+
+      .season-band {
+        padding: 20px 0 28px;
+      }
+
+      .survey-panel,
+      .readout {
+        padding: 16px;
+      }
+
+      .season-heading {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 1.7rem;
+      }
+
+      .reward-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .reward-tile {
+        min-height: 244px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="Nitro Type season feedback">
+        <div class="brand-mark">NT</div>
+        <div>
+          <strong>Season feedback</strong>
+          <span>Current season only</span>
+        </div>
+      </div>
+      <div class="player">
+        <strong>[NT]Adrian</strong>
+        <span>One response per season</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="season-band">
+      <div class="wrap season-grid">
+        <div class="survey-panel" aria-labelledby="season-title">
+          <div class="season-heading">
+            <div class="medal">
+              <img src="Season Rewards _ Nitro Type_files/season-medal-default.png" alt="Nitro Arcade medal">
+            </div>
+            <div>
+              <p class="eyebrow">Mar 1 - Apr 19</p>
+              <h1 id="season-title">Nitro Arcade Volume 3</h1>
+              <p class="season-copy">Rate the season, then call out the rewards that hit or missed.</p>
+            </div>
+          </div>
+
+          <h2>How likely are you to recommend this season?</h2>
+          <p class="muted">0 means not likely. 10 means you would tell another racer to jump in.</p>
+          <div class="nps-scale" id="npsScale" aria-label="Season recommendation score"></div>
+          <div class="scale-labels">
+            <span>Not likely</span>
+            <span>Extremely likely</span>
+          </div>
+
+          <div class="reason-bank" id="reasonBank" aria-label="Score reasons"></div>
+
+          <label for="commentBox">
+            <h2>What should the team know?</h2>
+          </label>
+          <textarea id="commentBox" class="comment-box" maxlength="280" placeholder="Theme, pacing, Gold track, Free track, repeats, favorite reward..."></textarea>
+        </div>
+
+        <aside class="readout" aria-live="polite">
+          <div>
+            <div class="readout-visual" aria-hidden="true">
+              <div class="loot-stack">
+                <img src="Season Rewards _ Nitro Type_files/arcade_large.png" alt="">
+                <img src="Season Rewards _ Nitro Type_files/nitro_tnt_1772334923.png" alt="">
+                <img src="Season Rewards _ Nitro Type_files/coins_1772334865.png" alt="">
+              </div>
+            </div>
+          </div>
+          <div>
+            <p class="eyebrow">Season readout</p>
+            <h2 id="readoutTitle">Ready for your take</h2>
+            <dl>
+              <div class="readout-row">
+                <dt>Status</dt>
+                <dd><span class="status-pill" id="submissionStatus">Not submitted</span></dd>
+              </div>
+              <div class="readout-row">
+                <dt>NPS bucket</dt>
+                <dd id="npsBucket">Pick a score</dd>
+              </div>
+              <div class="readout-row">
+                <dt>Loot score</dt>
+                <dd id="lootScore">0%</dd>
+              </div>
+              <div class="readout-row">
+                <dt>Top pick</dt>
+                <dd id="topPick">Waiting</dd>
+              </div>
+            </dl>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="rewards-band">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Loot rating</p>
+            <h2>Rate the rewards you remember</h2>
+            <p>Love, fine, or miss is enough. Unrated rewards stay out of the score.</p>
+          </div>
+          <div class="progress-note" id="progressNote">0 rated</div>
+        </div>
+        <div class="reward-grid" id="rewardGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="action-bar">
+    <div class="action-inner">
+      <div class="action-copy" id="actionCopy">
+        <strong>Season response open</strong>
+        Pick an NPS score and rate at least one reward.
+      </div>
+      <div class="action-buttons">
+        <button type="button" class="secondary-button" id="resetButton">Start over</button>
+        <button type="button" class="primary-button" id="submitButton" disabled>Submit rating</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status">Season rating submitted.</div>
+
+  <script>
+    const seasonId = "nitro-arcade-vol-3";
+    const userId = "adrian-demo";
+    const storageKey = "nt-season-rating:" + seasonId + ":" + userId;
+
+    const rewards = [
+      {
+        id: "arcade",
+        tier: 35,
+        track: "Free",
+        name: "Arcade",
+        type: "Car",
+        image: "Season Rewards _ Nitro Type_files/arcade_large.png"
+      },
+      {
+        id: "nitro-tnt",
+        tier: 19,
+        track: "Gold",
+        name: "Nitro TNT",
+        type: "Nitro",
+        image: "Season Rewards _ Nitro Type_files/nitro_tnt_1772334923.png"
+      },
+      {
+        id: "polygon",
+        tier: 13,
+        track: "Gold",
+        name: "Polygon",
+        type: "Car",
+        image: "Season Rewards _ Nitro Type_files/polygon_large.png"
+      },
+      {
+        id: "corsa-pepperoni",
+        tier: 22,
+        track: "Free",
+        name: "Corsa Pepperoni",
+        type: "Car",
+        image: "Season Rewards _ Nitro Type_files/corsapepperoni_large.png"
+      },
+      {
+        id: "coins-trail",
+        tier: 24,
+        track: "Free",
+        name: "Coins",
+        type: "Trail",
+        image: "Season Rewards _ Nitro Type_files/coins_1772334865.png"
+      },
+      {
+        id: "pixelman",
+        tier: 15,
+        track: "Gold",
+        name: "Pixelman Tag",
+        type: "Nametag",
+        image: "Season Rewards _ Nitro Type_files/pixelman_tag_1772334963.png"
+      },
+      {
+        id: "eight-bit-racer",
+        tier: 29,
+        track: "Gold",
+        name: "16-Bit Racer",
+        type: "Car",
+        image: "Season Rewards _ Nitro Type_files/16bitracerr_large.png"
+      },
+      {
+        id: "runner-racer",
+        tier: 26,
+        track: "Gold",
+        name: "Runner Racer",
+        type: "Car",
+        image: "Season Rewards _ Nitro Type_files/runeracerrrrr_large.png"
+      },
+      {
+        id: "extra-life",
+        tier: 21,
+        track: "Free",
+        name: "Extra Life",
+        type: "Sticker",
+        image: "Season Rewards _ Nitro Type_files/sticker_1772334398.png"
+      },
+      {
+        id: "half-heart",
+        tier: 12,
+        track: "Free",
+        name: "Half Heart",
+        type: "Sticker",
+        image: "Season Rewards _ Nitro Type_files/sticker_1772334436.png"
+      },
+      {
+        id: "perk",
+        tier: 27,
+        track: "Free",
+        name: "Mystery Perk",
+        type: "Perk",
+        image: "Season Rewards _ Nitro Type_files/perk.png"
+      },
+      {
+        id: "cash",
+        tier: 37,
+        track: "Free",
+        name: "$3,000,000",
+        type: "Cash",
+        image: "Season Rewards _ Nitro Type_files/season-insp-cash.2.jpg"
+      }
+    ];
+
+    const reasons = ["Theme", "Loot value", "Free track", "Gold track", "Pacing", "Too many repeats"];
+    const state = {
+      nps: null,
+      reasons: [],
+      comment: "",
+      itemRatings: {}
+    };
+
+    let submitted = false;
+
+    const els = {
+      npsScale: document.querySelector("#npsScale"),
+      reasonBank: document.querySelector("#reasonBank"),
+      rewardGrid: document.querySelector("#rewardGrid"),
+      progressNote: document.querySelector("#progressNote"),
+      submitButton: document.querySelector("#submitButton"),
+      resetButton: document.querySelector("#resetButton"),
+      commentBox: document.querySelector("#commentBox"),
+      submissionStatus: document.querySelector("#submissionStatus"),
+      npsBucket: document.querySelector("#npsBucket"),
+      lootScore: document.querySelector("#lootScore"),
+      topPick: document.querySelector("#topPick"),
+      readoutTitle: document.querySelector("#readoutTitle"),
+      actionCopy: document.querySelector("#actionCopy"),
+      toast: document.querySelector("#toast")
+    };
+
+    function renderNps() {
+      els.npsScale.innerHTML = "";
+      for (let score = 0; score <= 10; score += 1) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "nps-button";
+        button.textContent = score;
+        button.setAttribute("aria-pressed", String(state.nps === score));
+        button.setAttribute("aria-label", "Rate season " + score + " out of 10");
+        button.disabled = submitted;
+        button.addEventListener("click", () => {
+          state.nps = score;
+          renderNps();
+          updateReadout();
+        });
+        els.npsScale.appendChild(button);
+      }
+    }
+
+    function renderReasons() {
+      els.reasonBank.innerHTML = "";
+      reasons.forEach((reason) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "chip";
+        button.textContent = reason;
+        button.setAttribute("aria-pressed", String(state.reasons.includes(reason)));
+        button.disabled = submitted;
+        button.addEventListener("click", () => {
+          if (state.reasons.includes(reason)) {
+            state.reasons = state.reasons.filter((item) => item !== reason);
+          } else {
+            state.reasons = state.reasons.concat(reason);
+          }
+          renderReasons();
+        });
+        els.reasonBank.appendChild(button);
+      });
+    }
+
+    function renderRewards() {
+      els.rewardGrid.innerHTML = "";
+      rewards.forEach((reward) => {
+        const tile = document.createElement("article");
+        tile.className = "reward-tile";
+        tile.innerHTML = `
+          <div class="reward-art">
+            <img src="${reward.image}" alt="${reward.name}">
+          </div>
+          <div class="reward-body">
+            <div class="reward-meta">
+              <span>Tier ${reward.tier}</span>
+              <span class="track-tag ${reward.track === "Free" ? "is-free" : ""}">${reward.track}</span>
+            </div>
+            <h3>${reward.name}</h3>
+            <p class="muted">${reward.type}</p>
+          </div>
+          <div class="reward-actions" aria-label="${reward.name} rating">
+            ${lootButton(reward.id, "love", "Love")}
+            ${lootButton(reward.id, "fine", "Fine")}
+            ${lootButton(reward.id, "miss", "Miss")}
+          </div>
+        `;
+        tile.querySelectorAll(".loot-button").forEach((button) => {
+          button.disabled = submitted;
+          button.addEventListener("click", () => {
+            const value = button.dataset.value;
+            state.itemRatings[reward.id] = state.itemRatings[reward.id] === value ? undefined : value;
+            if (state.itemRatings[reward.id] === undefined) {
+              delete state.itemRatings[reward.id];
+            }
+            renderRewards();
+            updateReadout();
+          });
+        });
+        els.rewardGrid.appendChild(tile);
+      });
+    }
+
+    function lootButton(rewardId, value, label) {
+      const selected = state.itemRatings[rewardId] === value;
+      return `<button type="button" class="loot-button" data-value="${value}" aria-pressed="${selected}">${label}</button>`;
+    }
+
+    function getNpsBucket() {
+      if (state.nps === null) return "Pick a score";
+      if (state.nps >= 9) return "Promoter";
+      if (state.nps >= 7) return "Passive";
+      return "Detractor";
+    }
+
+    function getLootScore() {
+      const values = Object.values(state.itemRatings);
+      if (!values.length) return 0;
+      const points = values.reduce((total, value) => {
+        if (value === "love") return total + 100;
+        if (value === "fine") return total + 55;
+        return total;
+      }, 0);
+      return Math.round(points / values.length);
+    }
+
+    function getTopPick() {
+      const loved = rewards.find((reward) => state.itemRatings[reward.id] === "love");
+      if (loved) return loved.name;
+      const rated = rewards.find((reward) => state.itemRatings[reward.id]);
+      return rated ? rated.name : "Waiting";
+    }
+
+    function updateReadout() {
+      const ratedCount = Object.keys(state.itemRatings).length;
+      const canSubmit = state.nps !== null && ratedCount > 0 && !submitted;
+      const bucket = getNpsBucket();
+      const score = getLootScore();
+
+      els.progressNote.textContent = ratedCount + (ratedCount === 1 ? " rated" : " rated");
+      els.npsBucket.textContent = bucket;
+      els.lootScore.textContent = score + "%";
+      els.topPick.textContent = getTopPick();
+      els.submitButton.disabled = !canSubmit;
+      els.commentBox.disabled = submitted;
+
+      if (submitted) {
+        els.submissionStatus.textContent = "Submitted";
+        els.submissionStatus.classList.add("is-done");
+        els.readoutTitle.textContent = "Thanks for the signal";
+        els.actionCopy.innerHTML = "<strong>Season response saved</strong>One response is counted for Nitro Arcade Volume 3.";
+      } else {
+        els.submissionStatus.textContent = "Not submitted";
+        els.submissionStatus.classList.remove("is-done");
+        els.readoutTitle.textContent = state.nps === null ? "Ready for your take" : bucket + " response";
+        els.actionCopy.innerHTML = "<strong>Season response open</strong>" + (canSubmit ? "Ready to submit." : "Pick an NPS score and rate at least one reward.");
+      }
+    }
+
+    function saveSubmission() {
+      state.comment = els.commentBox.value.trim();
+      submitted = true;
+      localStorage.setItem(storageKey, JSON.stringify({
+        seasonId,
+        userId,
+        submittedAt: new Date().toISOString(),
+        response: state
+      }));
+      renderNps();
+      renderReasons();
+      renderRewards();
+      updateReadout();
+      showToast("Season rating submitted.");
+    }
+
+    function loadSubmission() {
+      const saved = localStorage.getItem(storageKey);
+      if (!saved) return;
+      try {
+        const parsed = JSON.parse(saved);
+        Object.assign(state, parsed.response);
+        els.commentBox.value = state.comment || "";
+        submitted = true;
+      } catch (error) {
+        localStorage.removeItem(storageKey);
+      }
+    }
+
+    function resetDemo() {
+      localStorage.removeItem(storageKey);
+      state.nps = null;
+      state.reasons = [];
+      state.comment = "";
+      state.itemRatings = {};
+      submitted = false;
+      els.commentBox.value = "";
+      renderAll();
+      showToast("Season response cleared.");
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("is-visible");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => {
+        els.toast.classList.remove("is-visible");
+      }, 2200);
+    }
+
+    function renderAll() {
+      renderNps();
+      renderReasons();
+      renderRewards();
+      updateReadout();
+    }
+
+    els.submitButton.addEventListener("click", saveSubmission);
+    els.resetButton.addEventListener("click", resetDemo);
+    els.commentBox.addEventListener("input", () => {
+      state.comment = els.commentBox.value;
+    });
+
+    loadSubmission();
+    renderAll();
+  </script>
+</body>
+</html>
