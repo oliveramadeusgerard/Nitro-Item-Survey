@@ -1594,59 +1594,128 @@
 
 <script>
 (function () {
-  var track = document.querySelector('.seasonTrack');
+  // ── Constants (from Nitro Type source) ──────────────────────────────────
+  var TILE_SIZE    = 160;   // 150px width + 10px margin
+  var CENTER_OFFSET = 437;  // (1024 - 160 + 10) / 2  — centers tile on screen
+
+  // ── Reward copy data (title, subtitle, rarity for inspector panel) ───────
+  var rewardCopyData = [
+    {title:'"Insert Coin to Continue"', subtitle:'Insert coin now!',      rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'Wampus Boo!',               subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'Car',                       subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
+    {title:'$750,000',                  subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Mystery Perk',              subtitle:'Season perk',            rarityClass:'rarity-badge--common',    rarityText:'Common Perk'},
+    {title:'"Pro Gamer Move"',          subtitle:'Season title unlock',    rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'Sticker',                   subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'$1,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Car',                       subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
+    {title:'Mystery Perk',              subtitle:'Season perk',            rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Perk'},
+    {title:'Car',                       subtitle:'Season car',             rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Car'},
+    {title:'Sticker',                   subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'$1,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Half Heart',                subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'Polygon',                   subtitle:'Season car',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Car'},
+    {title:'Mystery Perk',              subtitle:'Season perk',            rarityClass:'rarity-badge--rare',      rarityText:'Rare Perk'},
+    {title:'Pixelman Tag',              subtitle:'Season nametag',         rarityClass:'rarity-badge--legendary', rarityText:'Legendary Nametag'},
+    {title:'"Touching Grass"',          subtitle:'Season title unlock',    rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'$1,500,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Car',                       subtitle:'Season car',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Car'},
+    {title:'Nitro TNT',                 subtitle:'Season nitro',           rarityClass:'rarity-badge--epic',      rarityText:'Epic Nitro'},
+    {title:'$1,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Extra Life',                subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'Corsa Pepperoni',           subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
+    {title:'$2,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Coins',                     subtitle:'Season trail',           rarityClass:'rarity-badge--epic',      rarityText:'Epic Trail'},
+    {title:'$1,500,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Runner Racer',              subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
+    {title:'Mystery Perk',              subtitle:'Season perk',            rarityClass:'rarity-badge--epic',      rarityText:'Epic Perk'},
+    {title:'Sticker',                   subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'16-Bit Racer',             subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
+    {title:'"Jestermaxxing"',           subtitle:'Season title unlock',    rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'$2,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'Sticker',                   subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
+    {title:'"(Has a good gaming chair)"',subtitle:'Season title unlock',   rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'Mystery Perk',              subtitle:'Season perk',            rarityClass:'rarity-badge--legendary', rarityText:'Legendary Perk'},
+    {title:'Arcade',                    subtitle:'Season car',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Car'},
+    {title:'"Any% Speedrunner"',        subtitle:'Season title unlock',    rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
+    {title:'$3,000,000',               subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'},
+    {title:'$100,000',                  subtitle:'Nitro Cash',             rarityClass:'rarity-badge--legendary', rarityText:'Legendary Cash'}
+  ];
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────
+  var track     = document.querySelector('.seasonTrack');
   var container = document.querySelector('.season-track');
-  var prevBtn = document.getElementById('seasonPrev');
-  var nextBtn = document.getElementById('seasonNext');
+  var prevBtn   = document.getElementById('seasonPrev');
+  var nextBtn   = document.getElementById('seasonNext');
+  var thumbs    = Array.from(document.querySelectorAll('.seasonTrack-thumb'));
+  var visuals   = Array.from(document.querySelectorAll('.seasonInspector-rewardVisual'));
+  var copyRarity  = document.querySelector('.seasonInspector-rarity');
+  var copyTitle   = document.querySelector('.seasonInspector-copyTitle');
+  var copySubtitle= document.querySelector('.seasonInspector-copySubtitle');
 
   if (!track || !container || !prevBtn || !nextBtn) return;
-
   container.style.overflow = 'hidden';
-  var currentX = 0;
-  track.style.transform = 'translateX(0px)';
-  updateArrows();
 
-  function stepSize() {
-    var thumb = container.querySelector('.seasonTrack-thumb');
-    return thumb ? (thumb.offsetWidth + 10) * 4 : 400;
+  var selectedIndex = 0;
+
+  // ── Core select function ─────────────────────────────────────────────────
+  function select(index) {
+    selectedIndex = index;
+
+    // 1. Translate track — exact Nitro Type formula
+    track.style.transform = 'translateX(' + (-TILE_SIZE * index + CENTER_OFFSET) + 'px)';
+
+    // 2. Toggle is-selected on thumb tiles
+    thumbs.forEach(function (thumb, i) {
+      var reward = thumb.querySelector('.seasonReward');
+      if (reward) reward.classList.toggle('is-selected', i === index);
+    });
+
+    // 3. Toggle inspector visual animation classes
+    visuals.forEach(function (v, i) {
+      // Force reflow to restart animation when switching back to same visual
+      if (i === index && v.classList.contains('is-entering')) {
+        v.classList.remove('is-entering');
+        void v.offsetWidth;
+      }
+      v.classList.toggle('is-entering', i === index);
+      v.classList.toggle('is-exiting',  i !== index);
+    });
+
+    // 4. Update inspector copy panel
+    var d = rewardCopyData[index];
+    if (d && copyRarity && copyTitle && copySubtitle) {
+      var badge = copyRarity.querySelector('.rarity-badge');
+      if (badge) {
+        // Preserve inner structure, just swap class + text
+        badge.className = 'rarity-badge ' + d.rarityClass;
+        var content = badge.querySelector('.rarity-badge--content');
+        if (content) content.textContent = d.rarityText;
+      }
+      copyTitle.textContent = d.title;
+      copySubtitle.textContent = d.subtitle;
+    }
+
+    // 5. Update arrow disabled states (exact Nitro Type logic)
+    prevBtn.classList.toggle('is-disabled', index === 0);
+    nextBtn.classList.toggle('is-disabled', index === thumbs.length - 1);
   }
 
-  function maxScroll() {
-    return -(track.scrollWidth - container.offsetWidth);
-  }
-
-  function updateArrows() {
-    prevBtn.classList.toggle('is-disabled', currentX >= 0);
-    nextBtn.classList.toggle('is-disabled', currentX <= maxScroll());
-  }
-
-  function scrollTo(x) {
-    currentX = Math.max(maxScroll(), Math.min(0, x));
-    track.style.transform = 'translateX(' + currentX + 'px)';
-    updateArrows();
-  }
+  // ── Event bindings ───────────────────────────────────────────────────────
+  thumbs.forEach(function (thumb, i) {
+    thumb.addEventListener('click', function () { select(i); });
+  });
 
   prevBtn.addEventListener('click', function () {
-    scrollTo(currentX + stepSize());
+    if (!prevBtn.classList.contains('is-disabled')) select(selectedIndex - 1);
   });
 
   nextBtn.addEventListener('click', function () {
-    scrollTo(currentX - stepSize());
+    if (!nextBtn.classList.contains('is-disabled')) select(selectedIndex + 1);
   });
 
-  // Click any tile to jump to it
-  var thumbs = track.querySelectorAll('.seasonTrack-thumb');
-  thumbs.forEach(function (thumb) {
-    thumb.addEventListener('click', function () {
-      var thumbLeft = thumb.offsetLeft;
-      var containerWidth = container.offsetWidth;
-      var thumbWidth = thumb.offsetWidth;
-      // Center the clicked tile in the container
-      var targetX = -(thumbLeft - (containerWidth / 2) + (thumbWidth / 2));
-      scrollTo(targetX);
-    });
-  });
+  // ── Init ─────────────────────────────────────────────────────────────────
+  select(0);
 })();
 </script>
 </body></html>
-
