@@ -1244,7 +1244,8 @@
       nps: null,
       reasons: [],
       comment: "",
-      itemRatings: {}
+      itemRatings: {},
+      topPickId: null
     };
     var submitted = false;
     var expanded = false;
@@ -1288,14 +1289,14 @@
     }
 
     function topPick() {
-      var reward = Array.prototype.slice.call(document.querySelectorAll(".seasonReward")).find(function (item) {
-        return state.itemRatings[item.dataset.ntRewardId] === "love";
-      });
-      if (reward) return reward.dataset.ntRewardName;
-      reward = Array.prototype.slice.call(document.querySelectorAll(".seasonReward")).find(function (item) {
-        return state.itemRatings[item.dataset.ntRewardId];
-      });
-      return reward ? reward.dataset.ntRewardName : "Waiting";
+      // Explicit star takes priority
+      if (state.topPickId) {
+        var starred = Array.prototype.slice.call(document.querySelectorAll(".seasonReward")).find(function (item) {
+          return item.dataset.ntRewardId === state.topPickId;
+        });
+        if (starred) return starred.dataset.ntRewardName;
+      }
+      return "None";
     }
 
     function ratedCount() {
@@ -1322,7 +1323,7 @@
         '<div class="nt-rate-native__block"><h3>Why?</h3><div class="nt-rate-reasons" id="ntRateReasons" aria-label="Score reasons"></div></div>',
         '</div>',
         '<div class="nt-rate-item-tip" id="ntRateItemTip">Tip: hover reward tiles to rate each item — it helps calculate your top pick and loot score!</div>',
-        '<label class="nt-rate-native__note" for="ntRateComment"><h3>Team note</h3><textarea id="ntRateComment" maxlength="280" placeholder="Theme, pacing, tracks, repeats, favorite reward..."></textarea></label>',
+        '<label class="nt-rate-native__note" for="ntRateComment"><h3>Your thoughts</h3><textarea id="ntRateComment" maxlength="280" placeholder="What did you like? What could be better? Favourite reward..."></textarea></label>',
         '<div class="nt-rate-native__footer">',
         '<div class="nt-rate-native__readout"><span id="ntRateBucket">Pick a score</span><span id="ntRateLootScore">Loot 0%</span><span id="ntRateTopPick">Top pick: Waiting</span></div>',
         '<div class="nt-rate-native__actions"><button type="button" class="nt-rate-native__button" id="ntRateReset">Reset</button><button type="button" class="nt-rate-native__button nt-rate-native__button--primary" id="ntRateSubmit" disabled>Submit</button></div>',
@@ -1431,10 +1432,27 @@
         if (reward.querySelector(".nt-reward-rate")) return;
         var card = reward.querySelector(".seasonReward-card") || reward;
         var tier = reward.querySelector(".seasonReward-tier");
-        var name = rewardName(reward) || ("Tier " + (index + 1));
+        // Use rewardCopyData for correct item names
+        var name = (rewardCopyData[index] && rewardCopyData[index].title) || rewardName(reward) || ("Tier " + (index + 1));
         var id = "tier-" + (tier ? slug(tier.textContent) : index + 1) + "-" + slug(name);
         reward.dataset.ntRewardId = id;
         reward.dataset.ntRewardName = name;
+
+        // Star top-pick button
+        var star = document.createElement("button");
+        star.type = "button";
+        star.className = "nt-reward-star";
+        star.title = "Set as top pick";
+        star.setAttribute("aria-label", "Star " + name + " as top pick");
+        star.textContent = "\u2605";
+        star.addEventListener("click", function (event) {
+          event.stopPropagation();
+          if (submitted) return;
+          state.topPickId = (state.topPickId === id) ? null : id;
+          updateRewardButtons();
+          updateReadout();
+        });
+        card.appendChild(star);
 
         var control = document.createElement("div");
         control.className = "nt-reward-rate";
@@ -1451,6 +1469,7 @@
             else state.itemRatings[id] = value;
             updateRewardButtons();
             updateReadout();
+            updateItemTip();
           });
           control.appendChild(button);
         });
@@ -1462,12 +1481,18 @@
       Array.prototype.slice.call(document.querySelectorAll(".seasonReward")).forEach(function (reward) {
         var id = reward.dataset.ntRewardId;
         reward.classList.toggle("has-nt-rating", Boolean(state.itemRatings[id]));
+        reward.classList.toggle("has-nt-star", state.topPickId === id);
         Array.prototype.slice.call(reward.querySelectorAll(".nt-reward-rate button")).forEach(function (button) {
           var selected = state.itemRatings[id] === button.dataset.value;
           button.disabled = submitted;
           button.classList.toggle("is-selected", selected);
           button.setAttribute("aria-pressed", String(selected));
         });
+        var starBtn = reward.querySelector(".nt-reward-star");
+        if (starBtn) {
+          starBtn.disabled = submitted;
+          starBtn.setAttribute("aria-pressed", String(state.topPickId === id));
+        }
       });
     }
 
@@ -1518,6 +1543,7 @@
       state.reasons = [];
       state.comment = "";
       state.itemRatings = {};
+      state.topPickId = null;
       submitted = false;
       refs.comment.value = "";
       renderNps();
