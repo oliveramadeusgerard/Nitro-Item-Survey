@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"GitHub Repo: https://github.com/oliveramadeusgerard/Nitro-Item-Survey | Live Site: https://oliveramadeusgerard.github.io/Nitro-Item-Survey/\"}'",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
