@@ -1451,8 +1451,9 @@
         if (reward.querySelector(".nt-reward-rate")) return;
         var card = reward.querySelector(".seasonReward-card") || reward;
         var tier = reward.querySelector(".seasonReward-tier");
-        // Use rewardCopyData for correct item names
-        var name = (rewardCopyData[index] && rewardCopyData[index].title) || rewardName(reward) || ("Tier " + (index + 1));
+        // Use window.rewardCopyData for correct item names (defined in later script)
+        var copy = (typeof window !== "undefined" && window.rewardCopyData) ? window.rewardCopyData[index] : null;
+        var name = (copy && copy.title) || rewardName(reward) || ("Tier " + (index + 1));
         var id = "tier-" + (tier ? slug(tier.textContent) : index + 1) + "-" + slug(name);
         reward.dataset.ntRewardId = id;
         reward.dataset.ntRewardName = name;
@@ -1600,16 +1601,24 @@
       }, 2200);
     }
 
-    buildPanel();
-    if (!refs.panel) return;
-    loadRating();
-    refs.comment.value = state.comment || "";
-    seedRewardControls();
-    renderNps();
-    renderReasons();
-    updateRewardButtons();
-    updateReadout();
-    setPanelExpanded(false);
+    function init() {
+      buildPanel();
+      if (!refs.panel) return;
+      loadRating();
+      refs.comment.value = state.comment || "";
+      seedRewardControls();
+      renderNps();
+      renderReasons();
+      updateRewardButtons();
+      updateReadout();
+      setPanelExpanded(false);
+    }
+    // Defer init so later <script> blocks (e.g. window.rewardCopyData) run first
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      window.setTimeout(init, 0);
+    }
   })();
 </script>
 
@@ -1620,7 +1629,7 @@
   var CENTER_OFFSET = 437;  // (1024 - 160 + 10) / 2  — centers tile on screen
 
   // ── Reward copy data (title, subtitle, rarity for inspector panel) ───────
-  var rewardCopyData = [
+  var rewardCopyData = window.rewardCopyData = [
     {title:'"Insert Coin to Continue"', subtitle:'Insert coin now!',      rarityClass:'rarity-badge--uncommon',  rarityText:'Uncommon Title'},
     {title:'Wampus Boo!',               subtitle:'Season sticker',         rarityClass:'rarity-badge--rare',      rarityText:'Rare Sticker'},
     {title:'Liberty Creeper SI',        subtitle:'Season car',             rarityClass:'rarity-badge--epic',      rarityText:'Epic Car'},
