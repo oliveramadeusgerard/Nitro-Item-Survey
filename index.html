@@ -1339,7 +1339,7 @@
       panel.innerHTML = [
         '<div class="nt-rate-native__summary" id="ntRateToggle">',
         '<span class="nt-rate-native__summary-main"><strong>Rate Nitro Arcade Volume 3</strong><span id="ntRateSummary">Pick a score, then rate loot on hover.</span></span>',
-        '<span class="nt-rate-native__summary-meta"><span class="nt-rate-pill" id="ntRateStatus">Open</span><span class="nt-rate-pill" id="ntRateLootCount">0 loot ratings</span></span>',
+        '<span class="nt-rate-native__summary-meta"><span class="nt-rate-pill" id="ntRateLootCount">0 loot ratings</span></span>',
         '</div>',
         '<div class="nt-rate-native__drawer" id="ntRateDrawer">',
         '<div class="nt-rate-native__body">',
@@ -1365,7 +1365,6 @@
       refs.reasons = panel.querySelector("#ntRateReasons");
       refs.comment = panel.querySelector("#ntRateComment");
       refs.tip = panel.querySelector("#ntRateItemTip");
-      refs.status = panel.querySelector("#ntRateStatus");
       refs.lootCount = panel.querySelector("#ntRateLootCount");
       refs.bucket = panel.querySelector("#ntRateBucket");
       refs.lootScore = panel.querySelector("#ntRateLootScore");
@@ -1522,8 +1521,6 @@
       var bucket = npsBucket();
       var score = lootScore();
       var pick = topPick();
-      refs.status.textContent = submitted ? "Submitted" : "Open";
-      refs.status.classList.toggle("is-done", submitted);
       refs.lootCount.textContent = count + (count === 1 ? " loot rating" : " loot ratings");
       refs.bucket.textContent = bucket;
       refs.lootScore.textContent = "Loot " + score + "%";
